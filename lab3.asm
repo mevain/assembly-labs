@@ -2,6 +2,8 @@
 
 section .data
 ; сегмент инициализированных переменных
+ExitMsg db "Error: division to zero",10
+lenExit equ $-ExitMsg
 ; сегмент неинициализированных переменных
 section .bss
 OutBuf resb 10 ; буфер для вводимой строки
@@ -15,6 +17,7 @@ cur4 resd 1
 InBuf resb 10
 lenIn equ $-InBuf
 ; lenIn equ $-InBuf
+
 section .text
 global _start
 _start:
@@ -48,6 +51,8 @@ _start:
     
     mov eax, [a]
     mov ebx, [b]
+    cmp ebx, 0; проверка кода ошибки
+    je exit
     cwde
     idiv ebx
     mov [cur3], eax
@@ -55,6 +60,8 @@ _start:
     mov eax, [cur2]
     mov edx, 0
     mov ebx, [cur1]
+    cmp ebx, 0; проверка кода ошибки
+    je exit
     cwde
     idiv ebx
     mov [cur4], eax
@@ -93,3 +100,13 @@ _start:
             mov rax, 60 ; системная функция 60 (exit)
             xor rdi, rdi ; return code 0
             syscall
+
+    exit:
+        mov eax, 4; системная функция 4 (write)
+        mov ebx, 1 ; дескриптор файла stdout=1
+        mov ecx, ExitMsg
+        mov edx, lenExit ; длина выводимой строки
+        int 80h
+        mov rax, 60 ; системная функция 60 (exit)
+        xor rdi, rdi ; return code 0
+        syscall
