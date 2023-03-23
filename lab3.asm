@@ -56,28 +56,13 @@ _start:
     mov edx, 0
     mov ebx, [cur1]
     cwde
-    div ebx
+    idiv ebx
     mov [cur4], eax
 
     mov eax, [cur4]
     cmp eax, [cur3]
     jg greater
     jl less
-
-    ; write
-    ; mov rsi, OutBuf ; адрес выводимой строки
-    ; mov rax, [cur4]
-    ; cwde
-    ; call IntToStr64
-    ; mov rbp, rax
-    ; mov rax, 1 ; системная функция 1 (write)
-    ; mov rdi, 1 ; дескриптор файла stdout=1
-    ; ; mov rcx, rsi ; адрес выводимой строки
-    ; mov rdx, rbp ; длина выводимой строки
-    ; syscall ; вызов системной функции
-    ; mov rax, 60 ; системная функция 60 (exit)
-    ; xor rdi, rdi ; return code 0
-    ; syscall
 
     greater:     ; write
             mov rsi, OutBuf ; адрес выводимой строки

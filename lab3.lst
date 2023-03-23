@@ -137,7 +137,7 @@
     56 00000156 BA00000000                  mov edx, 0
     57 0000015B 8B1C25[12000000]            mov ebx, [cur1]
     58 00000162 98                          cwde
-    59 00000163 F7F3                        div ebx
+    59 00000163 F7FB                        idiv ebx
     60 00000165 890425[1E000000]            mov [cur4], eax
     61                                  
     62 0000016C 8B0425[1E000000]            mov eax, [cur4]
@@ -145,49 +145,34 @@
     64 0000017A 7F02                        jg greater
     65 0000017C 7C34                        jl less
     66                                  
-    67                                      ; write
-    68                                      ; mov rsi, OutBuf ; адрес выводимой строки
-    69                                      ; mov rax, [cur4]
-    70                                      ; cwde
-    71                                      ; call IntToStr64
-    72                                      ; mov rbp, rax
-    73                                      ; mov rax, 1 ; системная функция 1 (write)
-    74                                      ; mov rdi, 1 ; дескриптор файла stdout=1
-    75                                      ; ; mov rcx, rsi ; адрес выводимой строки
-    76                                      ; mov rdx, rbp ; длина выводимой строки
-    77                                      ; syscall ; вызов системной функции
-    78                                      ; mov rax, 60 ; системная функция 60 (exit)
-    79                                      ; xor rdi, rdi ; return code 0
-    80                                      ; syscall
+    67                                      greater:     ; write
+    68 0000017E 48BE-                               mov rsi, OutBuf ; адрес выводимой строки
+    68 00000180 [0000000000000000] 
+    69 00000188 488B0425[16000000]                  mov rax, [cur2]
+    70 00000190 98                                  cwde
+    71 00000191 E86AFEFFFF                          call IntToStr64
+    72 00000196 4889C5                              mov rbp, rax
+    73 00000199 B801000000                          mov rax, 1 ; системная функция 1 (write)
+    74 0000019E BF01000000                          mov rdi, 1 ; дескриптор файла stdout=1
+    75                                              ; mov rcx, rsi ; адрес выводимой строки
+    76 000001A3 4889EA                              mov rdx, rbp ; длина выводимой строки
+    77 000001A6 0F05                                syscall ; вызов системной функции
+    78 000001A8 B83C000000                          mov rax, 60 ; системная функция 60 (exit)
+    79 000001AD 4831FF                              xor rdi, rdi ; return code 0
+    80 000001B0 0F05                                syscall
     81                                  
-    82                                      greater:     ; write
-    83 0000017E 48BE-                               mov rsi, OutBuf ; адрес выводимой строки
-    83 00000180 [0000000000000000] 
-    84 00000188 488B0425[16000000]                  mov rax, [cur2]
-    85 00000190 98                                  cwde
-    86 00000191 E86AFEFFFF                          call IntToStr64
-    87 00000196 4889C5                              mov rbp, rax
-    88 00000199 B801000000                          mov rax, 1 ; системная функция 1 (write)
-    89 0000019E BF01000000                          mov rdi, 1 ; дескриптор файла stdout=1
+    82                                      less:     ; write
+    83 000001B2 48BE-                               mov rsi, OutBuf ; адрес выводимой строки
+    83 000001B4 [0000000000000000] 
+    84 000001BC 488B0425[12000000]                  mov rax, [cur1]
+    85 000001C4 98                                  cwde
+    86 000001C5 E836FEFFFF                          call IntToStr64
+    87 000001CA 4889C5                              mov rbp, rax
+    88 000001CD B801000000                          mov rax, 1 ; системная функция 1 (write)
+    89 000001D2 BF01000000                          mov rdi, 1 ; дескриптор файла stdout=1
     90                                              ; mov rcx, rsi ; адрес выводимой строки
-    91 000001A3 4889EA                              mov rdx, rbp ; длина выводимой строки
-    92 000001A6 0F05                                syscall ; вызов системной функции
-    93 000001A8 B83C000000                          mov rax, 60 ; системная функция 60 (exit)
-    94 000001AD 4831FF                              xor rdi, rdi ; return code 0
-    95 000001B0 0F05                                syscall
-    96                                  
-    97                                      less:     ; write
-    98 000001B2 48BE-                               mov rsi, OutBuf ; адрес выводимой строки
-    98 000001B4 [0000000000000000] 
-    99 000001BC 488B0425[12000000]                  mov rax, [cur1]
-   100 000001C4 98                                  cwde
-   101 000001C5 E836FEFFFF                          call IntToStr64
-   102 000001CA 4889C5                              mov rbp, rax
-   103 000001CD B801000000                          mov rax, 1 ; системная функция 1 (write)
-   104 000001D2 BF01000000                          mov rdi, 1 ; дескриптор файла stdout=1
-   105                                              ; mov rcx, rsi ; адрес выводимой строки
-   106 000001D7 4889EA                              mov rdx, rbp ; длина выводимой строки
-   107 000001DA 0F05                                syscall ; вызов системной функции
-   108 000001DC B83C000000                          mov rax, 60 ; системная функция 60 (exit)
-   109 000001E1 4831FF                              xor rdi, rdi ; return code 0
-   110 000001E4 0F05                                syscall
+    91 000001D7 4889EA                              mov rdx, rbp ; длина выводимой строки
+    92 000001DA 0F05                                syscall ; вызов системной функции
+    93 000001DC B83C000000                          mov rax, 60 ; системная функция 60 (exit)
+    94 000001E1 4831FF                              xor rdi, rdi ; return code 0
+    95 000001E4 0F05                                syscall
