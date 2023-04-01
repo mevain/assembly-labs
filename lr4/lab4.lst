@@ -78,81 +78,65 @@
     77 000000A8 C3                  <1>          ret
      2                                  
      3                                  section .data
-     4                                  ; сегмент инициализированных переменных
-     5 00000000 4572726F723A206469-     ExitMsg db "Error: division to zero",10
-     5 00000009 766973696F6E20746F-
-     5 00000012 207A65726F0A       
-     6                                  lenExit equ $-ExitMsg
-     7                                  ; сегмент неинициализированных переменных
-     8                                  section .bss
-     9 00000000 <res 00000004>          cur resd 1
-    10 00000004 <res 0000000A>          OutBuf resb 10 ; буфер для вводимой строки
-    11                                  lenOut equ $-OutBuf
-    12 0000000E <res 0000001C>          mas resb 28
-    13 0000002A <res 0000000A>          InBuf resb 10
-    14                                  lenIn equ $-InBuf
-    15                                  
-    16                                  section .text
-    17                                  global _start
-    18                                  _start:
-    19 000000A9 BF00000000                      mov edi, 0
-    20 000000AE B907000000                      mov ecx, 7 ; количество столбцов
-    21                                  cycle3: 
-    22 000000B3 51                              push rcx
-    23 000000B4 B904000000                      mov ecx, 4 ; количество строк
-    24 000000B9 BB00000000                      mov ebx, 0
-    25 000000BE B800000000              cycle4: mov rax, 0
-    26 000000C3 BF00000000                      mov rdi, 0
-    27 000000C8 48BE-                           mov rsi, InBuf
-    27 000000CA [2A00000000000000] 
-    28 000000D2 BA04000000                      mov rdx, 4
-    29                                          mov al, ecx
-    29          ******************       error: invalid combination of opcode and operands
-    30 000000D7 0F05                            syscall
-    31                                          mov ecx, al
-    31          ******************       error: invalid combination of opcode and operands
-    32 000000D9 48BE-                           mov rsi, InBuf
-    32 000000DB [2A00000000000000] 
-    33 000000E3 E86AFFFFFF                      call StrToInt64
-    34 000000E8 674889843B-                     mov [ebx+edi+mas], rax
-    34 000000ED [0E000000]         
-    35 000000F1 83C307                          add ebx, 7
-    36 000000F4 E2C8                            loop cycle4
-    37 000000F6 59                              pop rcx
-    38 000000F7 FFC7                            inc edi
-    39 000000F9 E2B8                            loop cycle3
-    40                                  
-    41                                          ; вывод нужных элементов
-    42 000000FB BF00000000                      mov edi, 0
-    43 00000100 B907000000                      mov ecx, 7 ; количество столбцов
-    44                                  cycle1: 
-    45 00000105 51                              push rcx
-    46 00000106 B904000000                      mov ecx, 4 ; количество строк
-    47 0000010B BB00000000                      mov ebx, 0
-    48 00000110 89D8                    cycle2: mov eax, ebx
-    49 00000112 01C8                            add eax, ecx
-    50 00000114 B303                            mov bl, 3
-    51 00000116 890425[00000000]                mov [cur], eax
-    52 0000011D 381C25[00000000]                cmp [cur], bl
-    53 00000124 75EA                            jne cycle2
-    54 00000126 48BE-                           mov rsi, OutBuf ; адрес выводимой строки
-    54 00000128 [0400000000000000] 
-    55 00000130 67488B843B-                     mov rax, [ebx+edi+mas]
-    55 00000135 [0E000000]         
-    56 00000139 98                              cwde
-    57 0000013A E8C1FEFFFF                      call IntToStr64
-    58 0000013F 4889C5                          mov rbp, rax
-    59 00000142 B801000000                      mov rax, 1 ; системная функция 1 (write)
-    60 00000147 BF01000000                      mov rdi, 1 ; дескриптор файла stdout=1
-    61 0000014C 4889EA                          mov rdx, rbp ; длина выводимой строки
-    62 0000014F 0F05                            syscall ; вызов системной функции
-    63 00000151 83C307                          add ebx, 7
-    64 00000154 E2BA                            loop cycle2
-    65 00000156 59                              pop rcx
-    66 00000157 FFC7                            inc edi
-    67 00000159 E2AA                            loop cycle1
-    68                                  
-    69                                          ;exit
-    70 0000015B B83C000000                      mov rax, 60 ; системная функция 60 (exit)
-    71 00000160 4831FF                          xor rdi, rdi ; return code 0
-    72 00000163 0F05                            syscall
+     4                                      ; объявление матрицы размером 4*7
+     5 00000000 01020304050607          matrix db 1, 2, 3, 4, 5, 6, 7
+     6 00000007 08090A0B0C0D0E                 db 8, 9, 10, 11, 12, 13, 14
+     7 0000000E 0F101112131415                 db 15, 16, 17, 18, 19, 20, 21
+     8 00000015 161718191A1B1C                 db 22, 23, 24, 25, 26, 27, 28
+     9                                  ; сегмент инициализированных переменных
+    10                                  ; сегмент неинициализированных переменных
+    11                                  section .bss
+    12 00000000 <res 0000000A>          OutBuf resb 10 ; буфер для вводимой строки
+    13                                  lenOut equ $-OutBuf
+    14 0000000A <res 00000004>          e resd 1
+    15 0000000E <res 00000004>          b resd 1
+    16 00000012 <res 00000004>          d resd 1
+    17 00000016 <res 00000004>          g resd 1
+    18 0000001A <res 00000004>          m resd 1
+    19 0000001E <res 00000004>          cur resd 1
+    20 00000022 <res 00000004>          result resd 1
+    21 00000026 <res 0000000A>          InBuf resb 10
+    22                                  lenIn equ $-InBuf
+    23                                  ; lenIn equ $-InBuf
+    24                                  
+    25                                  
+    26                                  section .text
+    27                                  global _start
+    28                                  _start:
+    29 000000A9 B900000000              mov ecx, 0  ; инициализация счетчика элементов матрицы
+    30                                  
+    31                                  loop_start:
+    32 000000AE 83F91C                      cmp ecx, 28  ; проверка, достигнут ли конец матрицы
+    33 000000B1 7D3D                        jge loop_end
+    34                                  
+    35 000000B3 89C8                        mov eax, ecx  ; сохранение текущего индекса столбца
+    36 000000B5 BB07000000                  mov ebx, 7    ; сохранение количества столбцов в матрице
+    37 000000BA F7F3                        div ebx       ; вычисление индекса строки
+    38                                  
+    39 000000BC 01D8                        add eax, ebx  ; вычисление суммы индексов
+    40 000000BE 83F800                      cmp eax, 0
+    41 000000C1 7529                        jne next
+    42                                  
+    43                                      ; вывод элемента матрицы
+    44 000000C3 678B81[00000000]            mov eax, [matrix + ecx]
+    45                                      ;mov [result], eax
+    46                                      ; write
+    47 000000CA 48BE-                       mov rsi, OutBuf ; адрес выводимой строки
+    47 000000CC [0000000000000000] 
+    48                                      ;mov rax, dl
+    49 000000D4 98                          cwde
+    50 000000D5 E826FFFFFF                  call IntToStr64
+    51 000000DA 4889C5                      mov rbp, rax
+    52 000000DD B801000000                  mov rax, 1 ; системная функция 1 (write)
+    53 000000E2 BF01000000                  mov rdi, 1 ; дескриптор файла stdout=1
+    54                                      ; mov rcx, rsi ; адрес выводимой строки
+    55 000000E7 4889EA                      mov rdx, rbp ; длина выводимой строки
+    56 000000EA 0F05                        syscall ; вызов системной функции
+    57                                  
+    58                                  next:
+    59 000000EC FFC1                        inc ecx       ; переход к следующему элементу матрицы
+    60 000000EE EBBE                        jmp loop_start
+    61                                  
+    62                                  loop_end:
+    63                                      ; завершение работы программы
+    64 000000F0 C3                          ret

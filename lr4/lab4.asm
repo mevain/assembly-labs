@@ -1,72 +1,64 @@
 %include "./lib64.asm"
 
 section .data
+    ; объявление матрицы размером 4*7
+matrix db 1, 2, 3, 4, 5, 6, 7
+       db 8, 9, 10, 11, 12, 13, 14
+       db 15, 16, 17, 18, 19, 20, 21
+       db 22, 23, 24, 25, 26, 27, 28
 ; сегмент инициализированных переменных
-ExitMsg db "Error: division to zero",10
-lenExit equ $-ExitMsg
 ; сегмент неинициализированных переменных
 section .bss
-cur resd 1
 OutBuf resb 10 ; буфер для вводимой строки
 lenOut equ $-OutBuf
-mas resb 28
+e resd 1
+b resd 1
+d resd 1
+g resd 1
+m resd 1
+cur resd 1
+result resd 1
 InBuf resb 10
 lenIn equ $-InBuf
+; lenIn equ $-InBuf
+
 
 section .text
 global _start
 _start:
-        mov edi, 0
-        mov ecx, 7 ; количество столбцов
-cycle3: 
-        push rcx
-        mov ecx, 4 ; количество строк
-        mov ebx, 0
-cycle4: mov rax, 0
-        mov rdi, 0
-        mov rsi, InBuf
-        mov rdx, 4
-        mov bl, ecx
-        syscall
-        mov ecx, bl
-        mov rsi, InBuf
-        call StrToInt64
-        mov [ebx+edi+mas], rax
-        add ebx, 7
-        loop cycle4
-        pop rcx
-        inc edi
-        loop cycle3
+mov ecx, 0  ; инициализация счетчика элементов матрицы
 
-        ; вывод нужных элементов
-        mov edi, 0
-        mov ecx, 7 ; количество столбцов
-cycle1: 
-        push rcx
-        mov ecx, 4 ; количество строк
-        mov ebx, 0
-cycle2: mov eax, ebx
-        add eax, ecx
-        mov bl, 3
-        mov [cur], eax
-        cmp [cur], bl
-        jne cycle2
-        mov rsi, OutBuf ; адрес выводимой строки
-        mov rax, [ebx+edi+mas]
-        cwde
-        call IntToStr64
-        mov rbp, rax
-        mov rax, 1 ; системная функция 1 (write)
-        mov rdi, 1 ; дескриптор файла stdout=1
-        mov rdx, rbp ; длина выводимой строки
-        syscall ; вызов системной функции
-        add ebx, 7
-        loop cycle2
-        pop rcx
-        inc edi
-        loop cycle1
+loop_start:
+    cmp ecx, 28  ; проверка, достигнут ли конец матрицы
+    jge loop_end
 
-        ;exit
-        mov rax, 60 ; системная функция 60 (exit)
-        xor rdi, rdi ; return code 0
-        syscall
+    mov eax, ecx  ; сохранение текущего индекса столбца
+    mov ebx, 7    ; сохранение количества столбцов в матрице
+    div ebx       ; вычисление индекса строки
+
+    add eax, ebx  ; вычисление суммы индексов
+    cmp eax, 0
+    jne next
+
+    ; вывод элемента матрицы
+    mov eax, [matrix + ecx]
+    ;mov [result], eax
+    ; write
+    mov rsi, OutBuf ; адрес выводимой строки
+    ;mov rax, dl
+    cwde
+    call IntToStr64
+    mov rbp, rax
+    mov rax, 1 ; системная функция 1 (write)
+    mov rdi, 1 ; дескриптор файла stdout=1
+    ; mov rcx, rsi ; адрес выводимой строки
+    mov rdx, rbp ; длина выводимой строки
+    syscall ; вызов системной функции
+
+next:
+    inc ecx       ; переход к следующему элементу матрицы
+    jmp loop_start
+
+loop_end:
+    ; завершение работы программы
+    ret
