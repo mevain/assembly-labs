@@ -77,66 +77,223 @@
     76 000000A7 5F                  <1> .R       pop    rdi
     77 000000A8 C3                  <1>          ret
      2                                  
-     3                                  section .data
-     4                                      ; объявление матрицы размером 4*7
-     5 00000000 01020304050607          matrix db 1, 2, 3, 4, 5, 6, 7
-     6 00000007 08090A0B0C0D0E                 db 8, 9, 10, 11, 12, 13, 14
-     7 0000000E 0F101112131415                 db 15, 16, 17, 18, 19, 20, 21
-     8 00000015 161718191A1B1C                 db 22, 23, 24, 25, 26, 27, 28
-     9                                  ; сегмент инициализированных переменных
-    10                                  ; сегмент неинициализированных переменных
-    11                                  section .bss
-    12 00000000 <res 0000000A>          OutBuf resb 10 ; буфер для вводимой строки
-    13                                  lenOut equ $-OutBuf
-    14 0000000A <res 00000004>          e resd 1
-    15 0000000E <res 00000004>          b resd 1
-    16 00000012 <res 00000004>          d resd 1
-    17 00000016 <res 00000004>          g resd 1
-    18 0000001A <res 00000004>          m resd 1
-    19 0000001E <res 00000004>          cur resd 1
-    20 00000022 <res 00000004>          result resd 1
-    21 00000026 <res 0000000A>          InBuf resb 10
-    22                                  lenIn equ $-InBuf
-    23                                  ; lenIn equ $-InBuf
-    24                                  
+     3                                  %define STDIN 0
+     4                                  %define READ 0
+     5                                  %define STDOUT 1
+     6                                  %define WRITE 1
+     7                                  %define EXIT 60
+     8                                  
+     9                                  %define ROWS 4
+    10                                  %define COLUMNS 7
+    11                                  %define MATRIX_SIZE 35
+    12                                  
+    13                                  section .data
+    14 00000000 456E74657220342A37-         StartMsg db "Enter 4*7 matrix:", 10
+    14 00000009 206D61747269783A0A 
+    15                                      StartLen equ $-StartMsg
+    16 00000012 0A                          NewLine: db 0xA
+    17 00000013 526573756C743A0A            ResultMsg db "Result:", 10
+    18                                      ResultLen equ $-ResultMsg
+    19                                  
+    20 0000001B 45616368206C696E65-         IncorrectLineMsg db "Each line should have exactly 7 numbers divided by spaces", 10
+    20 00000024 2073686F756C642068-
+    20 0000002D 617665206578616374-
+    20 00000036 6C792037206E756D62-
+    20 0000003F 657273206469766964-
+    20 00000048 656420627920737061-
+    20 00000051 6365730A           
+    21                                      IncorrectLineLen equ $-IncorrectLineMsg
+    22                                  
+    23 00000055 4572726F7220776869-         ErrorSTIMsg dq "Error while transform str to int", 10
+    23 0000005E 6C65207472616E7366-
+    23 00000067 6F726D207374722074-
+    23 00000070 6F20696E740A000000-
+    23 00000079 00000000           
+    24                                      ErrorSTILen equ $-ErrorSTIMsg
     25                                  
-    26                                  section .text
-    27                                  global _start
-    28                                  _start:
-    29 000000A9 B900000000              mov ecx, 0  ; инициализация счетчика элементов матрицы
-    30                                  
-    31                                  loop_start:
-    32 000000AE 83F91C                      cmp ecx, 28  ; проверка, достигнут ли конец матрицы
-    33 000000B1 7D3D                        jge loop_end
-    34                                  
-    35 000000B3 89C8                        mov eax, ecx  ; сохранение текущего индекса столбца
-    36 000000B5 BB07000000                  mov ebx, 7    ; сохранение количества столбцов в матрице
-    37 000000BA F7F3                        div ebx       ; вычисление индекса строки
+    26 0000007D 2020                        Space db "  "
+    27                                  
+    28                                  section .bss
+    29 00000000 <res 00000118>              matrix times MATRIX_SIZE resq 1
+    30 00000118 <res 00000004>              cur resd 1
+    31 0000011C <res 00000004>              cur1 resd 1
+    32 00000120 <res 00000004>              cur2 resd 1
+    33 00000124 <res 00000002>              OutBuf resw 1
+    34                                      lenOut equ $-OutBuf
+    35 00000126 <res 00000050>              InBuf resq 10
+    36                                      lenIn equ $-InBuf
+    37                                  
     38                                  
-    39 000000BC 01D8                        add eax, ebx  ; вычисление суммы индексов
-    40 000000BE 83F800                      cmp eax, 0
-    41 000000C1 7529                        jne next
-    42                                  
-    43                                      ; вывод элемента матрицы
-    44 000000C3 678B81[00000000]            mov eax, [matrix + ecx]
-    45                                      ;mov [result], eax
-    46                                      ; write
-    47 000000CA 48BE-                       mov rsi, OutBuf ; адрес выводимой строки
-    47 000000CC [0000000000000000] 
-    48                                      ;mov rax, dl
-    49 000000D4 98                          cwde
-    50 000000D5 E826FFFFFF                  call IntToStr64
-    51 000000DA 4889C5                      mov rbp, rax
-    52 000000DD B801000000                  mov rax, 1 ; системная функция 1 (write)
-    53 000000E2 BF01000000                  mov rdi, 1 ; дескриптор файла stdout=1
-    54                                      ; mov rcx, rsi ; адрес выводимой строки
-    55 000000E7 4889EA                      mov rdx, rbp ; длина выводимой строки
-    56 000000EA 0F05                        syscall ; вызов системной функции
-    57                                  
-    58                                  next:
-    59 000000EC FFC1                        inc ecx       ; переход к следующему элементу матрицы
-    60 000000EE EBBE                        jmp loop_start
+    39                                  section .text
+    40                                  global _start
+    41                                  
+    42                                  _start:
+    43 000000A9 B801000000                  mov rax, WRITE
+    44 000000AE BF01000000                  mov rdi, STDOUT
+    45 000000B3 48BE-                       mov rsi, StartMsg
+    45 000000B5 [0000000000000000] 
+    46 000000BD BA12000000                  mov rdx, StartLen
+    47 000000C2 0F05                        syscall
+    48                                  
+    49 000000C4 B904000000                  mov rcx, ROWS
+    50 000000C9 4831FF                      xor rdi, rdi
+    51                                  
+    52                                  read_line:
+    53 000000CC 51                          push rcx
+    54 000000CD 57                          push rdi
+    55                                  
+    56 000000CE B800000000                  mov rax, READ
+    57 000000D3 BF00000000                  mov rdi, STDIN
+    58 000000D8 48BE-                       mov rsi, InBuf
+    58 000000DA [2601000000000000] 
+    59 000000E2 BA50000000                  mov rdx, lenIn
+    60 000000E7 0F05                        syscall
     61                                  
-    62                                  loop_end:
-    63                                      ; завершение работы программы
-    64 000000F0 C3                          ret
+    62 000000E9 5F                          pop rdi
+    63 000000EA 4889C1                      mov rcx, rax ; Сохраням длину строки
+    64 000000ED 4831D2                      xor rdx, rdx ; Обнуляем регистр
+    65 000000F0 4D31C0                      xor r8, r8 ; Обнуляем регистр
+    66                                  
+    67                                  process_line:
+    68 000000F3 80BA[26010000]0A            cmp byte[InBuf + rdx], 10; Если конец строки то обрабатываем число
+    69 000000FA 7417                        je process_number
+    70                                  
+    71 000000FC 80BA[26010000]20            cmp byte[InBuf + rdx], ' '; Если был не конец, и следующий символ 
+    72 00000103 7537                        jne next; не пробел, то продолжаем считывание
+    73                                  
+    74 00000105 C682[26010000]0A            mov byte[InBuf + rdx], 10; Помещаем вместо проблеа \n
+    75 0000010C 4939D0                      cmp r8, rdx; Если длина строки не совпадает с предыдущей
+    76 0000010F 7502                        jne process_number
+    77 00000111 EB29                        jmp next; ???
+    78                                  
+    79                                  process_number:
+    80 00000113 52                          push rdx
+    81                                  
+    82 00000114 E839FFFFFF                  call StrToInt64; Вход: RSI Выход: RAX, RBX содержит 0 if errors = 0
+    83 00000119 4883FB00                    cmp rbx, 0
+    84 0000011D 0F8564010000                jne STIError; Вывод ошибки
+    85                                  
+    86 00000123 488904FD[00000000]          mov [matrix + 8 * rdi], rax; Помещаем результат в матрицу
+    87 0000012B 48FFC7                      inc rdi; увеличиваем счетчик введенных чисел
+    88                                  
+    89 0000012E 5A                          pop rdx
+    90 0000012F 4989D0                      mov r8, rdx; Теперь считывать следующее число надо начинать с 
+    91 00000132 49FFC0                      inc r8; окончания длины предыдущего
+    92 00000135 498DB0[26010000]            lea rsi, [InBuf + r8]; Передаем указатель на смещенный буфер
+    93                                  
+    94                                  next:
+    95 0000013C 48FFC2                      inc rdx; Увеличиваем длину числа
+    96 0000013F E2B2                        loop process_line
+    97                                  
+    98 00000141 59                          pop rcx
+    99 00000142 B804000000                  mov rax, ROWS; Проверим количество введеных чисел < 7 в текущей строке
+   100 00000147 4829C8                      sub rax, rcx
+   101 0000014A 48FFC0                      inc rax
+   102 0000014D 52                          push rdx
+   103 0000014E BA07000000                  mov rdx, COLUMNS
+   104 00000153 48F7EA                      imul rdx
+   105 00000156 5A                          pop rdx 
+   106                                  
+   107 00000157 4839C7                      cmp rdi, rax; Если введено чисел больше чем длинна строки матрицы
+   108 0000015A 0F850A010000                jne IncorrectLine
+   109                                  
+   110                                      ; loop read_line; 
+   111 00000160 48FFC9                      dec rcx
+   112 00000163 4883F900                    cmp rcx, 0
+   113 00000167 0F855FFFFFFF                jnz read_line
+   114                                  
+   115                                  output:
+   116 0000016D B801000000                  mov rax, WRITE
+   117 00000172 BF01000000                  mov rdi, STDOUT
+   118 00000177 48BE-                       mov rsi, ResultMsg
+   118 00000179 [1300000000000000] 
+   119 00000181 BA08000000                  mov rdx, ResultLen
+   120 00000186 0F05                        syscall
+   121                                  
+   122 00000188 B904000000                  mov rcx, ROWS
+   123 0000018D 4831DB                      xor rbx, rbx; Обнуляем регистр
+   124 00000190 B000                        mov al, 0 ; счетчик строк
+   125 00000192 B300                        mov bl, 0 ; счетчик столбцов
+   126 00000194 880425[18010000]            mov [cur], al
+   127 0000019B 881C25[1C010000]            mov [cur1], bl
+   128                                  output_row:
+   129 000001A2 51                          push rcx
+   130 000001A3 B907000000                  mov rcx, COLUMNS
+   131                                  output_column:
+   132 000001A8 51                          push rcx
+   133 000001A9 8B0425[18010000]            mov eax, [cur]
+   134 000001B0 030425[1C010000]            add eax, [cur1]
+   135 000001B7 881C25[20010000]            mov [cur2], bl
+   136 000001BE B303                        mov bl, 3
+   137 000001C0 98                          cwde
+   138 000001C1 F6F3                        div bl
+   139 000001C3 8A1C25[20010000]            mov bl, [cur2]
+   140 000001CA 882425[20010000]            mov [cur2], ah
+   141 000001D1 48BE-                       mov rsi, OutBuf
+   141 000001D3 [2401000000000000] 
+   142 000001DB 4831C0                      xor rax, rax
+   143 000001DE 488B04DD[00000000]          mov rax, [matrix + 8 * rbx]
+   144 000001E6 48FFC3                      inc rbx
+   145 000001E9 833C25[20010000]00          cmp dword [cur2], 0
+   146 000001F1 7525                        jne continue1
+   147 000001F3 E808FEFFFF                  call IntToStr64
+   148 000001F8 B801000000                  mov rax, WRITE; системная функция 1 (write)
+   149 000001FD BF01000000                  mov rdi, STDOUT; дескриптор файла stdout=1
+   150 00000202 48BE-                       mov rsi, OutBuf ; адрес выводимой строки
+   150 00000204 [2401000000000000] 
+   151 0000020C BA02000000                  mov rdx, lenOut ; длина строки
+   152 00000211 0F05                        syscall; вызов системной функции
+   153 00000213 E88C000000                  call PrintSpace
+   154                                  continue1:
+   155 00000218 FF0425[1C010000]            inc dword [cur1] ;сбивает все регистры. надо делать счетчик в переменных.
+   156 0000021F 59                          pop rcx
+   157 00000220 E286                        loop output_column
+   158 00000222 B801000000                  mov rax, WRITE; системная функция 1 (write)
+   159 00000227 BF01000000                  mov rdi, STDOUT; дескриптор файла stdout=1
+   160 0000022C 48BE-                       mov rsi, NewLine ; адрес выводимой строки
+   160 0000022E [1200000000000000] 
+   161 00000236 BA01000000                  mov rdx, 1 ; длина строки
+   162 0000023B 0F05                        syscall; вызов системной функции
+   163 0000023D 59                          pop rcx
+   164 0000023E FF0425[18010000]            inc dword [cur]
+   165 00000245 C70425[1C010000]00-         mov dword [cur1], 0
+   165 0000024D 000000             
+   166 00000250 48FFC9                      dec rcx
+   167 00000253 0F8549FFFFFF                jnz output_row
+   168                                  
+   169                                  exit:
+   170 00000259 4831FF                      xor rdi, rdi
+   171 0000025C B83C000000                  mov rax, EXIT
+   172 00000261 0F05                        syscall
+   173                                  
+   174                                   not_div:
+   175 00000263 0401                         add al, 1
+   176 00000265 E93EFFFFFF                   jmp output_column
+   177                                  
+   178                                  IncorrectLine:
+   179 0000026A B801000000                  mov rax, WRITE
+   180 0000026F BF01000000                  mov rdi, STDOUT   
+   181 00000274 48BE-                       mov rsi, IncorrectLineMsg
+   181 00000276 [1B00000000000000] 
+   182 0000027E BA3A000000                  mov rdx, IncorrectLineLen
+   183 00000283 0F05                        syscall
+   184 00000285 EBD2                        jmp exit
+   185                                  
+   186                                  STIError:
+   187 00000287 B801000000                  mov rax, 1; системная функция 1 (write)
+   188 0000028C BF01000000                  mov rdi, 1; дескриптор файла stdout=1
+   189 00000291 48BE-                       mov rsi, ErrorSTIMsg ; адрес выводимой строки
+   189 00000293 [5500000000000000] 
+   190 0000029B BA28000000                  mov rdx, ErrorSTILen ; длина строки
+   191 000002A0 0F05                        syscall; вызов системной функции
+   192 000002A2 EBB5                        jmp exit
+   193                                  ;end
+   194                                  
+   195                                  PrintSpace:    
+   196 000002A4 B801000000                  mov rax, 1
+   197 000002A9 BF01000000                  mov rdi, 1
+   198 000002AE 48BE-                       mov rsi, Space
+   198 000002B0 [7D00000000000000] 
+   199 000002B8 BA01000000                  mov rdx, 1
+   200 000002BD 0F05                        syscall
+   201 000002BF C3                          ret
