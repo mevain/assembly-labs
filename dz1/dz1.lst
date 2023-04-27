@@ -180,43 +180,42 @@
     81 000001B7 890C25[09000000]            mov [cur], ecx
     82 000001BE 0F05                        syscall
     83 000001C0 8B0C25[09000000]            mov ecx, [cur]
-    84 000001C7 48BE-                       mov rsi, InBuf
-    84 000001C9 [0D00000000000000] 
-    85 000001D1 51                          push rcx
-    86 000001D2 8B0C25[04000000]            mov ecx, [x]
-    87 000001D9 488D3C25[D5000000]          lea rdi, [AnsBuf]
-    88                                  cycl2:
-    89                                      ;mov [c], rsi
-    90 000001E1 8A06                        mov al, BYTE[rsi]
-    91                                      ;pop rdi
-    92 000001E3 4288040F                    mov BYTE[rdi+r9], al
-    93 000001E7 8A07                        mov al, BYTE[rdi]
-    94 000001E9 49FFC1                      inc r9
-    95 000001EC E2F3                        loop cycl2
+    84                                      ;mov rsi, InBuf
+    85 000001C7 51                          push rcx
+    86 000001C8 8B0C25[04000000]            mov ecx, [x]
+    87                                  cycl2:
+    88 000001CF 488D3425[0D000000]          lea rsi, [InBuf]
+    89 000001D7 498DB9[D5000000]            lea rdi, [AnsBuf+r9]
+    90 000001DE 51                          push rcx
+    91 000001DF B901000000                  mov ecx, 1
+    92 000001E4 F3A4                        rep movsb
+    93 000001E6 59                          pop rcx
+    94 000001E7 49FFC1                      inc r9
+    95 000001EA E2E3                        loop cycl2
     96                                  
-    97 000001EE 59                          pop rcx
-    98 000001EF FFC9                        dec ecx
-    99 000001F1 0F8514FFFFFF                jnz cycl
+    97 000001EC 59                          pop rcx
+    98 000001ED FFC9                        dec ecx
+    99 000001EF 0F8516FFFFFF                jnz cycl
    100                                  
-   101 000001F7 488D3425[D5000000]          lea rsi, [AnsBuf]
+   101 000001F5 488D3425[D5000000]          lea rsi, [AnsBuf]
    102                                  exit:
-   103 000001FF 56                          push rsi
+   103 000001FD 56                          push rsi
    104                                      ;write text
-   105 00000200 B801000000                  mov rax, 1 ; системная функция 1 (write)
-   106 00000205 BF01000000                  mov rdi, 1 ; дескриптор файла stdout=1
-   107 0000020A 48BE-                       mov rsi, ExitMsg
-   107 0000020C [0000000000000000] 
-   108 00000214 BA09000000                  mov rdx, lenExit ; длина строки
-   109 00000219 0F05                        syscall ; вызов системной функции
+   105 000001FE B801000000                  mov rax, 1 ; системная функция 1 (write)
+   106 00000203 BF01000000                  mov rdi, 1 ; дескриптор файла stdout=1
+   107 00000208 48BE-                       mov rsi, ExitMsg
+   107 0000020A [0000000000000000] 
+   108 00000212 BA09000000                  mov rdx, lenExit ; длина строки
+   109 00000217 0F05                        syscall ; вызов системной функции
    110                                  
-   111 0000021B B801000000                  mov rax, 1 ; системная функция 1 (write)
-   112 00000220 BF01000000                  mov rdi, 1 ; дескриптор файла stdout=1
-   113 00000225 5E                          pop rsi
-   114 00000226 BA64000000                  mov rdx, lenAns ; длина строки
-   115 0000022B 0F05                        syscall ; вызов системной функции
+   111 00000219 B801000000                  mov rax, 1 ; системная функция 1 (write)
+   112 0000021E BF01000000                  mov rdi, 1 ; дескриптор файла stdout=1
+   113 00000223 5E                          pop rsi
+   114 00000224 BA64000000                  mov rdx, lenAns ; длина строки
+   115 00000229 0F05                        syscall ; вызов системной функции
    116                                  
    117                                      ; exit
-   118 0000022D B83C000000                  mov rax, 60 ; системная функция 60 (exit)
-   119 00000232 4831FF                      xor rdi, rdi ; код возврата 0
-   120 00000235 0F05                        syscall ; вызов системной функции завершения
+   118 0000022B B83C000000                  mov rax, 60 ; системная функция 60 (exit)
+   119 00000230 4831FF                      xor rdi, rdi ; код возврата 0
+   120 00000233 0F05                        syscall ; вызов системной функции завершения
    121                                      ;;создать строку ans, сначала ввести n, потом цикл по n элементов где вводим букву и цифру, потом букву m колво раз пихаем в ans

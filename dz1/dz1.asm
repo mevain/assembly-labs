@@ -81,16 +81,16 @@ cycl:
     mov [cur], ecx
     syscall
     mov ecx, [cur]
-    mov rsi, InBuf
+    ;mov rsi, InBuf
     push rcx
     mov ecx, [x]
-    lea rdi, [AnsBuf]
 cycl2:
-    ;mov [c], rsi
-    mov al, BYTE[rsi]
-    ;pop rdi
-    mov BYTE[rdi+r9], al
-    mov al, BYTE[rdi]
+    lea rsi, [InBuf]
+    lea rdi, [AnsBuf+r9]
+    push rcx
+    mov ecx, 1
+    rep movsb
+    pop rcx
     inc r9
     loop cycl2
 
